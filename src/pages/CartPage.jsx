@@ -1,46 +1,45 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const CartPage = ({ cart, removeFromCart, updateQuantity }) => {
-  const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const finalPrice = totalPrice * 0.9; // 10% discount
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Shopping Cart</h2>
+    <div className="min-h-screen pt-20 p-6 bg-gray-100">
+      <h1 className="text-2xl font-bold mb-4">🛒 Your Cart</h1>
+
       {cart.length === 0 ? (
-        <p className="text-gray-600">Your cart is empty. <Link to="/" className="text-blue-600">Go shopping</Link></p>
+        <p className="text-gray-600">Your cart is empty.</p>
       ) : (
-        <>
-          <ul className="space-y-4">
-            {cart.map((item) => (
-              <li key={item.id} className="flex justify-between items-center border-b pb-2">
-                <span>{item.title} - ${item.price}</span>
-                <div className="flex items-center">
-                  <button 
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                    className="bg-gray-300 px-2 py-1 rounded"
-                  >-</button>
-                  <span className="mx-2">{item.quantity}</span>
-                  <button 
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                    className="bg-gray-300 px-2 py-1 rounded"
-                  >+</button>
-                  <button 
-                    onClick={() => removeFromCart(item.id)} 
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg ml-4"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4">
-            <p className="text-xl font-bold">Total: ${totalPrice.toFixed(2)}</p>
-            <p className="text-green-600 font-bold">Final Price (10% Discount): ${finalPrice.toFixed(2)}</p>
+        <motion.div 
+          className="bg-white p-6 rounded-lg shadow-lg space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {cart.map(item => (
+            <div key={item.id} className="flex items-center justify-between border-b pb-4">
+              <img src={item.image} alt={item.title} className="w-16 h-16 object-contain" />
+              <h2 className="text-sm font-semibold">{item.title}</h2>
+              <p className="text-blue-600 font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+              <div className="flex items-center mt-2">
+                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 py-1 bg-gray-200 rounded-md">
+                      ➖
+                    </button>
+                    <span className="px-4">{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 py-1 bg-gray-200 rounded-md">
+                      ➕
+                    </button>
+                  </div>
+              <button onClick={() => removeFromCart(item.id)} className="bg-red-500 text-white px-3 py-1 rounded">
+                Remove
+              </button>
+            </div>
+          ))}
+          <div className="text-right mt-4">
+            <p className="text-lg font-semibold">Total: <span className="text-green-600">${totalPrice}</span></p>
           </div>
-        </>
+        </motion.div>
       )}
     </div>
   );

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./components/Navbar";
-import ProductsPage from "./pages/ProductPage";
+import Home from "./pages/Home";
 import CartPage from "./pages/CartPage";
 
 const App = () => {
@@ -10,43 +10,52 @@ const App = () => {
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
-    document.title = "Aravind's store"
     axios.get("https://fakestoreapi.com/products")
       .then(response => setProducts(response.data))
       .catch(error => console.error("Error fetching products:", error));
   }, []);
 
+  // Add product to cart
   const addToCart = (product) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        return [...prevCart, { ...product, quantity: 1 }];
-      }
-    });
+    const updatedCart = cart.map(item =>
+      item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+    );
+
+    const isProductInCart = cart.find(item => item.id === product.id);
+    if (isProductInCart) {
+      setCart(updatedCart);
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
   };
 
+  // Remove product from cart
   const removeFromCart = (productId) => {
     setCart(cart.filter(item => item.id !== productId));
   };
 
-  const updateQuantity = (productId, quantity) => {
-    setCart(cart.map(item => 
-      item.id === productId ? { ...item, quantity: Math.max(1, quantity) } : item
-    ));
+  // Update product quantity
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+    } else {
+      setCart(cart.map(item =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      ));
+    }
   };
 
+  // Total items count
+  const totalItemsInCart = cart.reduce((total, item) => total + item.quantity, 0);
+
   return (
-    <div>
-      <Navbar cartCount={cart.length} />
+    <>
+      <Navbar cartCount={totalItemsInCart} />
       <Routes>
-        <Route path="/" element={<ProductsPage products={products} addToCart={addToCart} />} />
+        <Route path="/" element={<Home products={products} addToCart={addToCart} />} />
         <Route path="/cart" element={<CartPage cart={cart} removeFromCart={removeFromCart} updateQuantity={updateQuantity} />} />
       </Routes>
-    </div>
+    </>
   );
 };
 
